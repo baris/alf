@@ -15,6 +15,14 @@ func (h *WhatisHandler) ProcessCurrentEvent() {
 
 func (h *WhatisHandler) ProcessMessage(msg *slack.MessageEvent) {
 	text := strings.ToLower(msg.Text)
+	if strings.HasPrefix(text, h.alf.name) {
+		text = strings.TrimPrefix(text, h.alf.name)
+		text = strings.TrimLeft(text, ":@ ")
+		text = strings.TrimRight(text, ".!?,:;")
+	} else {
+		return
+	}
+
 	if strings.HasPrefix(text, "what is") {
 		text = strings.TrimPrefix(text, "what is")
 		text = strings.Trim(text, " ")
