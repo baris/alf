@@ -38,8 +38,8 @@ func NewAlf(name, hubotNick, token, defaultChannel, databaseFile string, updateI
 
 func (alf *Alf) start() {
 	go alf.rtm.ManageConnection()
-	go alf.updateChannels()
-	go alf.updateUsers()
+	go alf.updateChannelsLoop()
+	go alf.updateUsersLoop()
 	go alf.idleLoop()
 
 	for {
@@ -74,7 +74,7 @@ func (alf *Alf) AddHandler(h Handler) {
 	alf.handlers = append(alf.handlers, h)
 }
 
-func (alf *Alf) updateChannels() {
+func (alf *Alf) updateChannelsLoop() {
 	for {
 		channels, err := alf.api.GetChannels(true)
 		alf.channels = channels
@@ -86,7 +86,7 @@ func (alf *Alf) updateChannels() {
 
 }
 
-func (alf *Alf) updateUsers() {
+func (alf *Alf) updateUsersLoop() {
 	for {
 		users, err := alf.api.GetUsers()
 		alf.users = users
