@@ -45,6 +45,13 @@ func (alf *Alf) start() {
 		case ev := <-alf.rtm.IncomingEvents:
 			log.Debug(ev)
 			alf.currentEvent = ev
+			switch ev.Data.(type) {
+			case *slack.MessageEvent:
+				msg := ev.Data.(*slack.MessageEvent)
+				for _, h := range alf.handlers {
+					h.ProcessMessage(msg)
+				}
+			}
 			for _, h := range alf.handlers {
 				h.ProcessCurrentEvent()
 			}

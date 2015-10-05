@@ -2,6 +2,9 @@ package main
 
 import (
 	"math/rand"
+	"strings"
+
+	"github.com/nlopes/slack"
 )
 
 type QuoteHandler struct {
@@ -54,11 +57,22 @@ var quotes []string = []string{
 	"Naaaaa, that's stupid...I'll do anyway.",
 }
 
+func randomQuote() string {
+	return quotes[rand.Intn(len(quotes))]
+}
+
 func (h *QuoteHandler) ProcessCurrentEvent() {
+}
+
+func (h *QuoteHandler) ProcessMessage(msg *slack.MessageEvent) {
+	text := strings.ToLower(msg.Text)
+	if strings.Contains(text, "say something") {
+		h.alf.Send(randomQuote(), h.alf.defaultChannel)
+	}
 }
 
 func (h *QuoteHandler) ProcessIdleEvent() {
 	if rand.Intn(1000) == 1 {
-		h.alf.Send(quotes[rand.Intn(len(quotes))], h.alf.defaultChannel)
+		h.alf.Send(randomQuote(), h.alf.defaultChannel)
 	}
 }

@@ -11,16 +11,9 @@ type WhatisHandler struct {
 }
 
 func (h *WhatisHandler) ProcessCurrentEvent() {
-	ev := h.alf.currentEvent
-	switch ev.Data.(type) {
-	case *slack.MessageEvent:
-		msg := ev.Data.(*slack.MessageEvent)
-		h.handleMessage(msg)
-	}
-
 }
 
-func (h *WhatisHandler) handleMessage(msg *slack.MessageEvent) {
+func (h *WhatisHandler) ProcessMessage(msg *slack.MessageEvent) {
 	text := strings.ToLower(msg.Text)
 	if strings.HasPrefix(text, "what is") {
 		text = strings.TrimLeft(text, "what is")
