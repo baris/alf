@@ -14,6 +14,13 @@ type WhatisHandler struct {
 func (h *WhatisHandler) ProcessCurrentEvent() {
 }
 
+func (h *WhatisHandler) Help() string {
+	return `what is [QUERY STRING]  -- lookup QUERY STRING.
+know that [QUERY STRING] is [VALUE STRING] -- set QUERY STRING as VALUE STRING.
+what do you know? -- brain dump
+`
+}
+
 func (h *WhatisHandler) ProcessMessage(msg *slack.MessageEvent) {
 	text := strings.ToLower(msg.Text)
 	if strings.HasPrefix(text, h.alf.name) {

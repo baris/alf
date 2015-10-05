@@ -10,6 +10,10 @@ type GreetingHandler struct {
 	alf *Alf
 }
 
+func (h *GreetingHandler) Help() string {
+	return ""
+}
+
 func (h *GreetingHandler) ProcessCurrentEvent() {
 	ev := h.alf.currentEvent
 	switch ev.Data.(type) {

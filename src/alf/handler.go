@@ -5,6 +5,7 @@ import (
 )
 
 type Handler interface {
+	Help() string
 	ProcessCurrentEvent()
 	ProcessMessage(*slack.MessageEvent)
 	ProcessIdleEvent()

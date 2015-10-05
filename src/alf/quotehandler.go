@@ -62,6 +62,10 @@ func randomQuote() string {
 	return quotes[rand.Intn(len(quotes))]
 }
 
+func (h *QuoteHandler) Help() string {
+	return ""
+}
+
 func (h *QuoteHandler) ProcessCurrentEvent() {
 }
 
@@ -73,8 +77,8 @@ func (h *QuoteHandler) ProcessMessage(msg *slack.MessageEvent) {
 }
 
 func (h *QuoteHandler) ProcessIdleEvent() {
-	if rand.Intn(1000) == 1 {
-		if rand.Intn(2) == 1 && h.alf.hubotNick != "" {
+	if rand.Intn(1000) == 0 {
+		if rand.Intn(2) == 0 && h.alf.hubotNick != "" {
 			h.alf.Send(h.alf.hubotNick+": do you feel love?", h.alf.defaultChannel)
 			time.Sleep(3 * time.Second)
 			h.alf.Send(h.alf.hubotNick+": sarcastic clap", h.alf.defaultChannel)

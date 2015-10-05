@@ -70,6 +70,17 @@ func (alf *Alf) Send(msg, channelNameOrID string) {
 	alf.rtm.SendMessage(alf.rtm.NewOutgoingMessage(msg, channelID))
 }
 
+func (alf *Alf) IsMemberOf(channelName, userName string) bool {
+	channel := alf.getChannel(channelName)
+	userId := alf.getUserID(userName)
+	for _, member := range channel.Members {
+		if member == userId {
+			return true
+		}
+	}
+	return false
+}
+
 func (alf *Alf) AddHandler(h Handler) {
 	alf.handlers = append(alf.handlers, h)
 }
@@ -107,6 +118,16 @@ func (alf *Alf) idleLoop() {
 	}
 }
 
+func (alf *Alf) getChannel(channelName string) slack.Channel {
+	for _, channel := range alf.channels {
+		if channel.Name == channelName {
+			return channel
+		}
+	}
+	log.Debug("Cannot find channel: ", channelName)
+	return slack.Channel{}
+}
+
 func (alf *Alf) getChannelID(channelName string) string {
 	for _, channel := range alf.channels {
 		if channel.Name == channelName {
@@ -114,5 +135,15 @@ func (alf *Alf) getChannelID(channelName string) string {
 		}
 	}
 	log.Debug("Cannot find channel: ", channelName)
+	return ""
+}
+
+func (alf *Alf) getUserID(userName string) string {
+	for _, user := range alf.users {
+		if user.Name == userName {
+			return user.ID
+		}
+	}
+	log.Debug("Cannot find user: ", userName)
 	return ""
 }
