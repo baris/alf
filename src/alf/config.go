@@ -6,13 +6,14 @@ import (
 )
 
 const (
-	defaultName           = applicationName
+	defaultName           = "alf"
 	defaultUpdateInterval = 60
 )
 
 // Config type holds the global configuration values
 type Config struct {
 	Name           string `json:"name"`
+	DatabaseFile   string `json:"databaseFile"`
 	SlackToken     string `json:"slackToken"`
 	DefaultChannel string `json:"defaultChannel"`
 	UpdateInterval int    `json:"updateInterval"`
@@ -21,6 +22,7 @@ type Config struct {
 func defaultConfig() Config {
 	return Config{
 		Name:           defaultName,
+		DatabaseFile:   "alf.db",
 		SlackToken:     "",
 		DefaultChannel: "general",
 		UpdateInterval: defaultUpdateInterval,

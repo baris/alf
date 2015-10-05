@@ -32,16 +32,16 @@ func initLogrus(logLevel string) {
 
 func start(ctx *cli.Context) {
 	initLogrus(ctx.String("log_level"))
-	config, err := readConfig(ctx.String("config"))
+	c, err := readConfig(ctx.String("config"))
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(-1)
 	}
 
-	alf := NewAlf(config.Name, config.SlackToken, config.DefaultChannel, config.UpdateInterval)
+	alf := NewAlf(c.Name, c.SlackToken, c.DefaultChannel, c.DatabaseFile, c.UpdateInterval)
 	alf.AddHandler(&QuoteHandler{alf: alf})
 	alf.AddHandler(&GreetingHandler{alf: alf})
-	alf.AddHandler(&GoogleSearchHandler{alf: alf})
+	alf.AddHandler(&WhatisHandler{alf: alf})
 	alf.start()
 }
 

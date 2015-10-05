@@ -10,6 +10,7 @@ type Alf struct {
 	name           string
 	api            *slack.Client
 	rtm            *slack.RTM
+	brain          *Brain
 	users          []slack.User
 	channels       []slack.Channel
 	handlers       []Handler
@@ -18,11 +19,12 @@ type Alf struct {
 	currentEvent   slack.RTMEvent
 }
 
-func NewAlf(name, token, defaultChannel string, updateInterval int) *Alf {
+func NewAlf(name, token, defaultChannel, databaseFile string, updateInterval int) *Alf {
 	alf := new(Alf)
 	alf.name = name
 	alf.api = slack.New(token)
 	alf.rtm = alf.api.NewRTM()
+	alf.brain = NewBrain(databaseFile)
 	alf.defaultChannel = defaultChannel
 	alf.handlers = make([]Handler, 0)
 	alf.users = make([]slack.User, 0)
@@ -43,8 +45,8 @@ func (alf *Alf) start() {
 		case ev := <-alf.rtm.IncomingEvents:
 			log.Debug(ev)
 			alf.currentEvent = ev
-			for _, handler := range alf.handlers {
-				handler.ProcessCurrentEvent()
+			for _, h := range alf.handlers {
+				h.ProcessCurrentEvent()
 			}
 		}
 	}
@@ -59,8 +61,8 @@ func (alf *Alf) Send(msg, channelNameOrID string) {
 	alf.rtm.SendMessage(alf.rtm.NewOutgoingMessage(msg, channelID))
 }
 
-func (alf *Alf) AddHandler(handler Handler) {
-	alf.handlers = append(alf.handlers, handler)
+func (alf *Alf) AddHandler(h Handler) {
+	alf.handlers = append(alf.handlers, h)
 }
 
 func (alf *Alf) updateChannels() {
@@ -89,8 +91,8 @@ func (alf *Alf) updateUsers() {
 
 func (alf *Alf) idleLoop() {
 	for {
-		for _, handler := range alf.handlers {
-			go handler.ProcessIdleEvent()
+		for _, h := range alf.handlers {
+			go h.ProcessIdleEvent()
 		}
 		time.Sleep(time.Duration(alf.updateInterval) * time.Second)
 	}

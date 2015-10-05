@@ -2,7 +2,7 @@ NAME        := alf
 VERSION     := 0.0.1
 SRCDIR      := src
 PKGS        := $(NAME)
-SOURCES        := $(foreach pkg, $(PKGS), $(wildcard $(SRCDIR)/$(pkg)/*.go))
+SOURCES     := $(foreach pkg, $(PKGS), $(wildcard $(SRCDIR)/$(pkg)/*.go))
 
 # symlinks confuse go tools, let's not mess with it and use -L
 GOPATH  := $(shell pwd -L)

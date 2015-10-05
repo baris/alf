@@ -1,5 +1,6 @@
 {
     "name": "alf",
+    "databasePath": "/path/to/alf.db",
     "slackToken": "secret",
     "defaultChannel": "general",
     "updateInterval": 60
