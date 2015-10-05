@@ -8,6 +8,7 @@ import (
 
 type Alf struct {
 	name           string
+	hubotNick      string
 	api            *slack.Client
 	rtm            *slack.RTM
 	brain          *Brain
@@ -19,9 +20,10 @@ type Alf struct {
 	currentEvent   slack.RTMEvent
 }
 
-func NewAlf(name, token, defaultChannel, databaseFile string, updateInterval int) *Alf {
+func NewAlf(name, hubotNick, token, defaultChannel, databaseFile string, updateInterval int) *Alf {
 	alf := new(Alf)
 	alf.name = name
+	alf.hubotNick = hubotNick
 	alf.api = slack.New(token)
 	alf.rtm = alf.api.NewRTM()
 	alf.brain = NewBrain(databaseFile)

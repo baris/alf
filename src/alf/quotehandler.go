@@ -3,6 +3,7 @@ package main
 import (
 	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/nlopes/slack"
 )
@@ -73,6 +74,12 @@ func (h *QuoteHandler) ProcessMessage(msg *slack.MessageEvent) {
 
 func (h *QuoteHandler) ProcessIdleEvent() {
 	if rand.Intn(1000) == 1 {
-		h.alf.Send(randomQuote(), h.alf.defaultChannel)
+		if rand.Intn(2) == 1 && h.alf.hubotNick != "" {
+			h.alf.Send(h.alf.hubotNick+": do you feel love?", h.alf.defaultChannel)
+			time.Sleep(3 * time.Second)
+			h.alf.Send(h.alf.hubotNick+": sarcastic clap", h.alf.defaultChannel)
+		} else {
+			h.alf.Send(randomQuote(), h.alf.defaultChannel)
+		}
 	}
 }

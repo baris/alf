@@ -13,6 +13,7 @@ const (
 // Config type holds the global configuration values
 type Config struct {
 	Name           string `json:"name"`
+	HubotNick      string `json:"hubotNick"`
 	DatabaseFile   string `json:"databaseFile"`
 	SlackToken     string `json:"slackToken"`
 	DefaultChannel string `json:"defaultChannel"`
@@ -22,6 +23,7 @@ type Config struct {
 func defaultConfig() Config {
 	return Config{
 		Name:           defaultName,
+		HubotNick:      "",
 		DatabaseFile:   "alf.db",
 		SlackToken:     "",
 		DefaultChannel: "general",
