@@ -58,3 +58,21 @@ func (brain *Brain) Get(namespace, key string) (value string, err error) {
 	})
 	return
 }
+
+func (brain *Brain) GetAll(namespace string) (kv map[string]string, err error) {
+	kv = make(map[string]string)
+
+	err = brain.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(namespace))
+		if b == nil {
+			return errors.New("Bucket not found")
+		}
+
+		c := b.Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			kv[string(k)] = string(v)
+		}
+		return nil
+	})
+	return
+}
