@@ -1,0 +1,6 @@
+{
+    "name": "alf",
+    "slackToken": "secret",
+    "defaultChannel": "general",
+    "updateInterval": 60
+}
