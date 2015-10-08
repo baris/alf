@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"time"
 
 	"github.com/nlopes/slack"
@@ -131,7 +132,7 @@ func (alf *Alf) getChannel(channelName string) slack.Channel {
 func (alf *Alf) getChannelID(channelName string) string {
 	for _, channel := range alf.channels {
 		if channel.Name == channelName {
-			return channel.ID
+			return strings.ToLower(channel.ID)
 		}
 	}
 	log.Debug("Cannot find channel: ", channelName)
@@ -141,7 +142,7 @@ func (alf *Alf) getChannelID(channelName string) string {
 func (alf *Alf) getUserID(userName string) string {
 	for _, user := range alf.users {
 		if user.Name == userName {
-			return user.ID
+			return strings.ToLower(user.ID)
 		}
 	}
 	log.Debug("Cannot find user: ", userName)

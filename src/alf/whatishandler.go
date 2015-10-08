@@ -22,15 +22,13 @@ what do you know? -- brain dump
 }
 
 func (h *WhatisHandler) ProcessMessage(msg *slack.MessageEvent) {
-	text := strings.ToLower(msg.Text)
-	if strings.HasPrefix(text, h.alf.name) {
-		text = strings.TrimPrefix(text, h.alf.name)
-		text = strings.TrimLeft(text, ":@ ")
-		text = strings.TrimRight(text, ".!?,:;")
-	} else {
+	name := h.alf.name
+	userId := h.alf.getUserID(h.alf.name)
+	if !IsToUser(msg.Text, name, userId) {
 		return
 	}
-
+	text := strings.ToLower(RemoveMention(msg.Text, name, userId))
+	text = strings.TrimRight(text, ".!?,:;")
 	if strings.HasPrefix(text, "what is") {
 		text = strings.TrimPrefix(text, "what is")
 		text = strings.Trim(text, " ")

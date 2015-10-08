@@ -47,16 +47,13 @@ medium top all -- list all top stories on the home page
 }
 
 func (h *MediumHandler) ProcessMessage(msg *slack.MessageEvent) {
-	text := strings.ToLower(msg.Text)
-	if strings.HasPrefix(text, h.alf.name) {
-		text = strings.TrimPrefix(text, h.alf.name)
-		text = strings.TrimLeft(text, ":@ ")
-		text = strings.TrimRight(text, ".!?,:;")
-	} else {
+	name := h.alf.name
+	userId := h.alf.getUserID(h.alf.name)
+	if !IsToUser(msg.Text, name, userId) {
 		return
 	}
-
 	stories := make([]string, 0)
+	text := strings.ToLower(RemoveMention(msg.Text, name, userId))
 	if strings.HasPrefix(text, "medium top") {
 		limit := 5
 		if strings.HasPrefix(text, "medium top all") {
