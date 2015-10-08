@@ -70,14 +70,19 @@ func (h *QuoteHandler) ProcessCurrentEvent() {
 }
 
 func (h *QuoteHandler) ProcessMessage(msg *slack.MessageEvent) {
-	text := strings.ToLower(msg.Text)
-	if strings.Contains(text, "say something") {
-		h.alf.Send(randomQuote(), h.alf.defaultChannel)
+	name := h.alf.name
+	userId := h.alf.getUserID(h.alf.name)
+	if !IsToUser(msg.Text, name, userId) {
+		return
+	}
+	text := strings.ToLower(RemoveMention(msg.Text, name, userId))
+	if strings.HasPrefix(text, "say something") || strings.HasPrefix(text, "talk") {
+		h.alf.Send(randomQuote(), msg.Channel)
 	}
 }
 
 func (h *QuoteHandler) ProcessIdleEvent() {
-	if rand.Intn(1000) == 0 {
+	if rand.Intn(86400/h.alf.updateInterval) == 0 {
 		if rand.Intn(2) == 0 && h.alf.hubotNick != "" {
 			h.alf.Send(h.alf.hubotNick+": do you feel love?", h.alf.defaultChannel)
 			time.Sleep(3 * time.Second)

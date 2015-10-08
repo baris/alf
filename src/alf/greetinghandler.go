@@ -25,7 +25,7 @@ func (h *GreetingHandler) ProcessCurrentEvent() {
 
 func (h *GreetingHandler) ProcessMessage(msg *slack.MessageEvent) {
 	text := strings.ToLower(msg.Text)
-	if strings.Contains(text, "hello") || strings.Contains(text, "hi") {
+	if strings.Contains(text, "hello") {
 		user, _ := h.alf.api.GetUserInfo(msg.User)
 		h.alf.Send("Hey, "+user.Name+"! Hello!", msg.Channel)
 	}
