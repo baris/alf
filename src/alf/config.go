@@ -15,6 +15,7 @@ type Config struct {
 	Name           string `json:"name"`
 	HubotNick      string `json:"hubotNick"`
 	DatabaseFile   string `json:"databaseFile"`
+	ScriptsDir     string `json:"stringsDir"`
 	SlackToken     string `json:"slackToken"`
 	DefaultChannel string `json:"defaultChannel"`
 	UpdateInterval int    `json:"updateInterval"`
@@ -25,6 +26,7 @@ func defaultConfig() Config {
 		Name:           defaultName,
 		HubotNick:      "",
 		DatabaseFile:   "alf.db",
+		ScriptsDir:     "scripts",
 		SlackToken:     "",
 		DefaultChannel: "general",
 		UpdateInterval: defaultUpdateInterval,

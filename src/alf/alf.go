@@ -17,11 +17,12 @@ type Alf struct {
 	channels       []slack.Channel
 	handlers       []Handler
 	updateInterval int
+	scriptsDir     string
 	defaultChannel string
 	currentEvent   slack.RTMEvent
 }
 
-func NewAlf(name, hubotNick, token, defaultChannel, databaseFile string, updateInterval int) *Alf {
+func NewAlf(name, hubotNick, token, defaultChannel, databaseFile, scriptsDir string, updateInterval int) *Alf {
 	alf := new(Alf)
 	alf.name = name
 	alf.hubotNick = hubotNick
@@ -32,6 +33,7 @@ func NewAlf(name, hubotNick, token, defaultChannel, databaseFile string, updateI
 	alf.handlers = make([]Handler, 0)
 	alf.users = make([]slack.User, 0)
 	alf.channels = make([]slack.Channel, 0)
+	alf.scriptsDir = scriptsDir
 	alf.updateInterval = updateInterval
 	alf.api.SetDebug(false)
 	return alf
