@@ -2,6 +2,6 @@
 
 function processMessage (message)
    if string.find(message, "cloud") then
-      return string.gsub(message, "cloud", "but")
+      return string.gsub(message, "cloud", "butt")
    end
 end
