@@ -64,11 +64,13 @@ func (h *WhatisHandler) ProcessMessage(msg *slack.MessageEvent) {
 		all, err := h.alf.brain.GetAll("whatis")
 		if err == nil {
 			h.alf.Send("I know that...", msg.Channel)
+			things := make([]string, len(all))
 			for k, v := range all {
-				h.alf.Send(k+" is "+v, msg.Channel)
+				things = append(things, k+" is "+v)
 			}
+			h.alf.Send(strings.Join(things, "\n"), msg.Channel)
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 		h.alf.Send(h.alf.hubotNick+": image me You know nothing, Jon Snow.", msg.Channel)
 
 	}
