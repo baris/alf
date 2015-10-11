@@ -50,6 +50,7 @@ func (alf *Alf) start() {
 		case ev := <-alf.rtm.IncomingEvents:
 			log.Debug(ev)
 			alf.currentEvent = ev
+
 			switch ev.Data.(type) {
 			case *slack.MessageEvent:
 				msg := ev.Data.(*slack.MessageEvent)
@@ -57,6 +58,7 @@ func (alf *Alf) start() {
 					h.ProcessMessage(msg)
 				}
 			}
+
 			for _, h := range alf.handlers {
 				h.ProcessCurrentEvent()
 			}
@@ -114,10 +116,10 @@ func (alf *Alf) updateUsersLoop() {
 
 func (alf *Alf) idleLoop() {
 	for {
+		time.Sleep(time.Duration(alf.updateInterval) * time.Second)
 		for _, h := range alf.handlers {
 			go h.ProcessIdleEvent()
 		}
-		time.Sleep(time.Duration(alf.updateInterval) * time.Second)
 	}
 }
 
@@ -127,7 +129,7 @@ func (alf *Alf) getChannel(channelName string) slack.Channel {
 			return channel
 		}
 	}
-	log.Debug("Cannot find channel: ", channelName)
+	log.Debug("Cannot find channel for ", channelName)
 	return slack.Channel{}
 }
 
@@ -137,7 +139,7 @@ func (alf *Alf) getChannelID(channelName string) string {
 			return strings.ToLower(channel.ID)
 		}
 	}
-	log.Debug("Cannot find channel: ", channelName)
+	log.Debug("Cannot find channel ID for ", channelName)
 	return ""
 }
 
