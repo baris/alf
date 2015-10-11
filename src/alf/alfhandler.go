@@ -17,6 +17,11 @@ default channel is [CHANNEL] -- sets the default channel to CHANNEL
 }
 
 func (h *AlfHandler) ProcessCurrentEvent() {
+	ev := h.alf.currentEvent
+	switch ev.Data.(type) {
+	case *slack.HelloEvent:
+		h.alf.Send("Now tell me you love me!", h.alf.defaultChannel)
+	}
 }
 
 func (h *AlfHandler) ProcessMessage(msg *slack.MessageEvent) {
