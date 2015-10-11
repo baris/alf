@@ -40,9 +40,10 @@ func (h *MediumHandler) ProcessCurrentEvent() {
 }
 
 func (h *MediumHandler) Help() string {
-	return `medium top -- list top 5 stories from medium.com
-medium top all -- list all top stories on the home page
+	help := `NICK: medium top -- list top 5 stories from medium.com
+NICK: medium top all -- list all top stories on the home page
 `
+	return strings.Replace(help, "NICK:", alf.name+":", -1)
 }
 
 func (h *MediumHandler) ProcessMessage(msg *slack.MessageEvent) {

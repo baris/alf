@@ -14,11 +14,12 @@ func (h *WhatisHandler) ProcessCurrentEvent() {
 }
 
 func (h *WhatisHandler) Help() string {
-	return `what is [QUERY STRING]  -- lookup QUERY STRING.
-know that [QUERY STRING] is [VALUE STRING] -- set QUERY STRING as VALUE STRING.
-forget [QUERY STRING] -- delete QUERY STRING.
-what do you know? -- brain dump.
+	help := `NICK: what is [QUERY STRING]  -- lookup QUERY STRING.
+NICK: know that [QUERY STRING] is [VALUE STRING] -- set QUERY STRING as VALUE STRING.
+NICK: forget [QUERY STRING] -- delete QUERY STRING.
+NICK: what do you know? -- brain dump.
 `
+	return strings.Replace(help, "NICK:", alf.name+":", -1)
 }
 
 func (h *WhatisHandler) ProcessMessage(msg *slack.MessageEvent) {

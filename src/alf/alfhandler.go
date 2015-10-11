@@ -10,9 +10,10 @@ type AlfHandler struct {
 }
 
 func (h *AlfHandler) Help() string {
-	return `help -- print this help string
-default channel is [CHANNEL] -- sets the default channel to CHANNEL
+	help := `NICK: help -- print this help string
+NICK: default channel is [CHANNEL] -- sets the default channel to CHANNEL
 `
+	return strings.Replace(help, "NICK:", alf.name+":", -1)
 }
 
 func (h *AlfHandler) ProcessCurrentEvent() {
