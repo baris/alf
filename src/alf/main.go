@@ -38,12 +38,14 @@ func start(ctx *cli.Context) {
 		os.Exit(-1)
 	}
 
-	alf := NewAlf(c.Name, c.HubotNick, c.SlackToken, c.DefaultChannel, c.DatabaseFile, c.ScriptsDir, c.UpdateInterval)
-	alf.AddHandler(&AlfHandler{alf: alf})
-	alf.AddHandler(&ScriptsHandler{alf: alf})
-	alf.AddHandler(&QuoteHandler{alf: alf})
-	alf.AddHandler(&WhatisHandler{alf: alf})
-	alf.AddHandler(&MediumHandler{alf: alf})
+	initAlf(c)
+	initBrain(c)
+
+	alf.AddHandler(&AlfHandler{})
+	alf.AddHandler(&ScriptsHandler{})
+	alf.AddHandler(&QuoteHandler{})
+	alf.AddHandler(&WhatisHandler{})
+	alf.AddHandler(&MediumHandler{})
 	alf.start()
 }
 

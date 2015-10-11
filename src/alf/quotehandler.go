@@ -9,7 +9,6 @@ import (
 )
 
 type QuoteHandler struct {
-	alf *Alf
 }
 
 var quotes []string = []string{
@@ -70,25 +69,25 @@ func (h *QuoteHandler) ProcessCurrentEvent() {
 }
 
 func (h *QuoteHandler) ProcessMessage(msg *slack.MessageEvent) {
-	name := h.alf.name
-	userId := h.alf.getUserID(h.alf.name)
+	name := alf.name
+	userId := alf.getUserID(alf.name)
 	if !IsToUser(msg.Text, name, userId) {
 		return
 	}
 	text := strings.ToLower(RemoveMention(msg.Text, name, userId))
 	if strings.HasPrefix(text, "say something") || strings.HasPrefix(text, "talk") {
-		h.alf.Send(randomQuote(), msg.Channel)
+		alf.Send(randomQuote(), msg.Channel)
 	}
 }
 
 func (h *QuoteHandler) ProcessIdleEvent() {
-	if rand.Intn(86400/h.alf.updateInterval) == 0 {
-		if rand.Intn(2) == 0 && h.alf.hubotNick != "" {
-			h.alf.Send(h.alf.hubotNick+": do you feel love?", h.alf.defaultChannel)
+	if rand.Intn(86400/alf.updateInterval) == 0 {
+		if rand.Intn(2) == 0 && alf.hubotNick != "" {
+			alf.Send(alf.hubotNick+": do you feel love?", alf.defaultChannel)
 			time.Sleep(3 * time.Second)
-			h.alf.Send(h.alf.hubotNick+": sarcastic clap", h.alf.defaultChannel)
+			alf.Send(alf.hubotNick+": sarcastic clap", alf.defaultChannel)
 		} else {
-			h.alf.Send(randomQuote(), h.alf.defaultChannel)
+			alf.Send(randomQuote(), alf.defaultChannel)
 		}
 	}
 }

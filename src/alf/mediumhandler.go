@@ -11,7 +11,6 @@ import (
 )
 
 type MediumHandler struct {
-	alf *Alf
 }
 
 type TopStoriesResponse struct {
@@ -47,8 +46,8 @@ medium top all -- list all top stories on the home page
 }
 
 func (h *MediumHandler) ProcessMessage(msg *slack.MessageEvent) {
-	name := h.alf.name
-	userId := h.alf.getUserID(h.alf.name)
+	name := alf.name
+	userId := alf.getUserID(alf.name)
 	if !IsToUser(msg.Text, name, userId) {
 		return
 	}
@@ -73,7 +72,7 @@ func (h *MediumHandler) ProcessMessage(msg *slack.MessageEvent) {
 				break
 			}
 		}
-		h.alf.Send(strings.Join(stories, "\n"), msg.Channel)
+		alf.Send(strings.Join(stories, "\n"), msg.Channel)
 	}
 }
 

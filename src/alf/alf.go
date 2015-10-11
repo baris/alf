@@ -7,12 +7,13 @@ import (
 	"github.com/nlopes/slack"
 )
 
+var alf *Alf
+
 type Alf struct {
 	name           string
 	hubotNick      string
 	api            *slack.Client
 	rtm            *slack.RTM
-	brain          *Brain
 	users          []slack.User
 	channels       []slack.Channel
 	handlers       []Handler
@@ -22,21 +23,19 @@ type Alf struct {
 	currentEvent   slack.RTMEvent
 }
 
-func NewAlf(name, hubotNick, token, defaultChannel, databaseFile, scriptsDir string, updateInterval int) *Alf {
-	alf := new(Alf)
-	alf.name = name
-	alf.hubotNick = hubotNick
-	alf.api = slack.New(token)
+func initAlf(c Config) {
+	alf = new(Alf)
+	alf.name = c.Name
+	alf.hubotNick = c.HubotNick
+	alf.api = slack.New(c.SlackToken)
 	alf.rtm = alf.api.NewRTM()
-	alf.brain = NewBrain(databaseFile)
-	alf.defaultChannel = defaultChannel
+	alf.defaultChannel = c.DefaultChannel
 	alf.handlers = make([]Handler, 0)
 	alf.users = make([]slack.User, 0)
 	alf.channels = make([]slack.Channel, 0)
-	alf.scriptsDir = scriptsDir
-	alf.updateInterval = updateInterval
+	alf.scriptsDir = c.ScriptsDir
+	alf.updateInterval = c.UpdateInterval
 	alf.api.SetDebug(false)
-	return alf
 }
 
 func (alf *Alf) start() {
@@ -77,9 +76,9 @@ func (alf *Alf) Send(msg, channelNameOrID string) {
 
 func (alf *Alf) IsMemberOf(channelName, userName string) bool {
 	channel := alf.getChannel(channelName)
-	userId := alf.getUserID(userName)
+	userID := alf.getUserID(userName)
 	for _, member := range channel.Members {
-		if member == userId {
+		if member == userID {
 			return true
 		}
 	}
@@ -150,5 +149,15 @@ func (alf *Alf) getUserID(userName string) string {
 		}
 	}
 	log.Debug("Cannot find user: ", userName)
+	return ""
+}
+
+func (alf *Alf) getUserName(userID string) string {
+	for _, user := range alf.users {
+		if user.ID == userID {
+			return strings.ToLower(user.Name)
+		}
+	}
+	log.Debug("Cannot find user ID: ", userID)
 	return ""
 }

@@ -6,18 +6,19 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+var brain *Brain
+
 type Brain struct {
 	db *bolt.DB
 }
 
-func NewBrain(dbfile string) (brain *Brain) {
+func initBrain(c Config) {
 	brain = new(Brain)
 	var err error
-	brain.db, err = bolt.Open(dbfile, 0600, nil)
+	brain.db, err = bolt.Open(c.DatabaseFile, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return brain
 }
 
 func (brain *Brain) Close() {
