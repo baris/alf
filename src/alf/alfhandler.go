@@ -33,9 +33,13 @@ func (h *AlfHandler) ProcessMessage(msg *slack.MessageEvent) {
 	text := strings.ToLower(RemoveMention(msg.Text, name, userId))
 	text = strings.TrimRight(text, ".!?,:;")
 	if text == "help" {
+		help := make([]string, 0)
 		for _, handler := range alf.handlers {
-			alf.Send(handler.Help(), msg.Channel)
+			if handler.Help() != "" {
+				help = append(help, handler.Help())
+			}
 		}
+		alf.Send(strings.Join(help, "-----\n"), msg.Channel)
 	} else if strings.HasPrefix(text, "default channel is ") {
 		text = strings.TrimPrefix(text, "default channel is ")
 		text = strings.Trim(text, " ")
