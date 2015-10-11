@@ -42,7 +42,6 @@ func start(ctx *cli.Context) {
 	alf.AddHandler(&AlfHandler{alf: alf})
 	alf.AddHandler(&ScriptsHandler{alf: alf})
 	alf.AddHandler(&QuoteHandler{alf: alf})
-	alf.AddHandler(&GreetingHandler{alf: alf})
 	alf.AddHandler(&WhatisHandler{alf: alf})
 	alf.AddHandler(&MediumHandler{alf: alf})
 	alf.start()
