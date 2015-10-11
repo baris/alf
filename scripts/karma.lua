@@ -54,6 +54,12 @@ function updateWords(msg)
    end
 end
 
+--------------------------
+
+function help()
+   return "karma [WORDS] -- returns the karma of the given words"
+end
+
 function processMessage ()
    msg = strip(alf.msg())
    updateWords(msg)
