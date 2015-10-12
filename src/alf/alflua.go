@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/baris/goluas"
 	"github.com/nlopes/slack"
 	"github.com/yuin/gopher-lua"
 )
@@ -10,6 +11,8 @@ func luaCallScript(scriptPath, method string) string {
 	defer L.Close()
 
 	luaAlfLoader(L)
+
+	L.PreloadModule("s", goluas.Loader)
 
 	if err := L.DoFile(scriptPath); err != nil {
 		log.Error("Failed to load script file", err)

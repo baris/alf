@@ -1,29 +1,4 @@
-
-function strip(str)
-   return str:match("^%s*(.-)%s*$")
-end
-
-function ltrim(str, match)
-   return str:match("^"..match.."(.-)$")
-end
-
-function starts(str, match)
-   if str:len() < match:len() then
-      return false
-   elseif str:sub(0, match:len()) == match then
-      return true
-   end
-   return false
-end
-
-function ends(str, match)
-   if str:len() < match:len() then
-      return false
-   elseif str:sub(str:len()-match:len()+1, str:len()) == match then
-      return true
-   end
-   return false
-end
+local s = require("s")
 
 function getKarma(word)
    value = alf.brainGet("karma", word)
@@ -46,9 +21,9 @@ end
 
 function updateWords(msg)
    for word in msg:gmatch("%S+") do
-      if ends(word, "++") then
+      if s.endswith(word, "++") then
          updateWord(word, 1)
-      elseif ends(word, "--") then
+      elseif s.endswith(word, "--") then
          updateWord(word, -1)
       end
    end
@@ -61,11 +36,11 @@ function help()
 end
 
 function processMessage ()
-   msg = strip(alf.msg())
+   msg = s.trim(alf.msg(), " ")
    updateWords(msg)
 
-   if starts(msg, "karma") then
-      msg = strip(ltrim(msg, "karma "))
+   if s.startswith(msg, "karma") then
+      msg = s.trim(s.trimprefix(msg, "karma "), " ")
       karma = {}
       for word in msg:gmatch("%w+") do
          value = getKarma(word)
