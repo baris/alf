@@ -43,6 +43,7 @@ func luaAlfLoader(L *lua.LState) {
 		"user":     luaMessageUser,
 	})
 	L.SetField(mod, "name", lua.LString(alf.name))
+	L.SetField(mod, "hubotNick", lua.LString(alf.hubotNick))
 	L.SetGlobal("alf", mod)
 }
 

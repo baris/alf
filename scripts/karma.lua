@@ -70,7 +70,7 @@ function processMessage ()
       for word in msg:gmatch("%w+") do
          value = getKarma(word)
          if value ~= nil then
-            table.insert(karma, word .. " has a karma of " .. value)
+            table.insert(karma, word .. " has " .. value .. " karma point(s).")
          end
       end
       return table.concat(karma, "\n")
