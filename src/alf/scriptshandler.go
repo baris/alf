@@ -2,6 +2,7 @@ package main
 
 import (
 	"path/filepath"
+	"strings"
 
 	"github.com/nlopes/slack"
 )
@@ -17,8 +18,7 @@ func (h *ScriptsHandler) Help() string {
 			help += ret + "\n"
 		}
 	}
-	return help
-
+	return strings.Replace(help, "NICK:", alf.name+":", -1)
 }
 
 func (h *ScriptsHandler) ProcessCurrentEvent() {
