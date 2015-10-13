@@ -1,7 +1,7 @@
 
 function processMessage ()
    msg = alf.msg()
-   if msg:match("^ *alf. what is ") then
+   if msg:match("^ *"..alf.name..". what is ") then
       return ""
    end
 
