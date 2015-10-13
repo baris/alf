@@ -9,15 +9,14 @@ end
 function processMessage ()
    msg = s.trim(alf.msg(), " ")
 
-   response = alf.brainGet("responses", msg)
-   if response ~= "" then
-      return response
+   query, response = string.match(msg, "^" .. alf.name .. ".* response (.*) == (.*)$")
+   if query ~= nil and response ~= nil then
+      alf.brainPut("responses", query, response)
+      return "OK!"
    end
 
-   query, response = string.match(msg, "^" .. alf.name .. ".* response (.*) == (.*)$")
-   if query == nil or response == nil then
-      return ""
+   response = alf.brainGetMatch("responses", msg)
+   if response ~= nil then
+      return response
    end
-   alf.brainPut("responses", query, response)
-   return "OK!"
 end

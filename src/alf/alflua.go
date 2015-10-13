@@ -1,6 +1,8 @@
 package main
 
 import (
+	"regexp"
+
 	"github.com/baris/goluas"
 	"github.com/nlopes/slack"
 	"github.com/yuin/gopher-lua"
@@ -40,10 +42,11 @@ func luaCallScript(scriptPath, method string) string {
 
 func luaAlfLoader(L *lua.LState) {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"brainGet": luaBrainGet,
-		"brainPut": luaBrainPut,
-		"msg":      luaMessage,
-		"user":     luaMessageUser,
+		"brainGet":      luaBrainGet,
+		"brainGetMatch": luaBrainGetMatch,
+		"brainPut":      luaBrainPut,
+		"msg":           luaMessage,
+		"user":          luaMessageUser,
 	})
 	L.SetField(mod, "name", lua.LString(alf.name))
 	L.SetField(mod, "hubotNick", lua.LString(alf.hubotNick))
@@ -73,6 +76,23 @@ func luaBrainPut(L *lua.LState) int {
 	}
 
 	return 1 // number of results
+}
+
+func luaBrainGetMatch(L *lua.LState) int {
+	bucket := L.ToString(1)
+	str := L.ToString(2)
+
+	all, err := brain.GetAll(bucket)
+	if err == nil {
+		for k, v := range all {
+			if ok, _ := regexp.MatchString(k, str); ok {
+				L.Push(lua.LString(v))
+				return 1
+			}
+		}
+	}
+	L.Push(lua.LNil)
+	return 1
 }
 
 func luaMessage(L *lua.LState) int {
