@@ -52,7 +52,7 @@ func (h *MediumHandler) ProcessMessage(msg *slack.MessageEvent) {
 	if !IsToUser(msg.Text, name, userId) {
 		return
 	}
-	stories := make([]string, 0)
+	var stories []string
 	text := strings.ToLower(RemoveMention(msg.Text, name, userId))
 	if strings.HasPrefix(text, "medium top") {
 		limit := 5
@@ -100,6 +100,10 @@ func getTopStories() []TopStoriesPost {
 
 	var result TopStoriesResponse
 	err = json.Unmarshal(body, &result)
+	if err != nil {
+		log.Error("Failed to unmarshall results: ", err)
+		return make([]TopStoriesPost, 0)
+	}
 
 	return result.Payload.Value.Posts
 }

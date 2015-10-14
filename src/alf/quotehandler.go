@@ -11,7 +11,7 @@ import (
 type QuoteHandler struct {
 }
 
-var quotes []string = []string{
+var quotes = []string{
 	"Call the police! Call the police!",
 	"There's hair in this tuna fish...I like it!",
 	"Fine, I'll make a peanut butter sandwich...where's the blender?",

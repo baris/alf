@@ -33,7 +33,7 @@ func (h *AlfHandler) ProcessMessage(msg *slack.MessageEvent) {
 	text := strings.ToLower(RemoveMention(msg.Text, name, userId))
 	text = strings.TrimRight(text, ".!?,:;")
 	if text == "help" {
-		help := make([]string, 0)
+		var help []string
 		for _, handler := range alf.handlers {
 			if handler.Help() != "" {
 				help = append(help, handler.Help())
