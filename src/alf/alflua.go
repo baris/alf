@@ -13,6 +13,7 @@ func luaCallScript(scriptPath, method string) string {
 	defer L.Close()
 
 	luaAlfLoader(L)
+	luaHTTPLoader(L)
 
 	L.PreloadModule("s", goluas.Loader)
 
