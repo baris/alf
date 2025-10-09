@@ -1,11 +1,11 @@
 package commands
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type quoteCommand struct{}
@@ -34,8 +34,9 @@ func (q *quoteCommand) Handle(req Request) (Response, error) {
 		}
 
 		text := strings.Join(req.Args[1:], " ")
-		key := fmt.Sprintf("%s%s", quotePrefix, uuid.NewString())
-		if err := req.Brain.Set(req.Context, key, fmt.Sprintf("%s — <@%s> (%s)", text, req.User, time.Now().Format(time.RFC822))); err != nil {
+		key := fmt.Sprintf("%s%s", quotePrefix, randomID())
+		value := fmt.Sprintf("%s — %s (%s)", text, req.User, time.Now().Format(time.RFC822))
+		if err := req.Brain.Set(req.Context, key, value); err != nil {
 			return Response{}, fmt.Errorf("store quote: %w", err)
 		}
 
@@ -47,4 +48,12 @@ func (q *quoteCommand) Handle(req Request) (Response, error) {
 	}
 
 	return Response{Text: "I don't have any quotes yet. Add one with `quote add <text>`.", UseMarkdown: true}, nil
+}
+
+func randomID() string {
+	b := make([]byte, 8)
+	if _, err := rand.Read(b); err != nil {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	return hex.EncodeToString(b)
 }

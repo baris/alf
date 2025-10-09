@@ -1,5 +1,6 @@
-# Example configuration for alf
-app_token: "xapp-your-app-token"
-bot_token: "xoxb-your-bot-token"
-brain_path: "data/brain.json"
-log_level: "info"
+{
+  "brain_path": "data/brain.json",
+  "default_user": "operator",
+  "greeting": "alf ready. type 'help' to explore commands or 'exit' to quit.",
+  "prompt": "> "
+}

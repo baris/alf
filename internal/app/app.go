@@ -1,60 +1,39 @@
 package app
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"os"
 	"strings"
-	"time"
-
-	"github.com/slack-go/slack"
-	"github.com/slack-go/slack/slackevents"
-	"github.com/slack-go/slack/socketmode"
-	"go.uber.org/zap"
+	"sync"
 
 	"github.com/baris/alf/internal/brain"
 	"github.com/baris/alf/internal/commands"
 	"github.com/baris/alf/internal/config"
 )
 
-// App encapsulates the modern alf runtime.
+// App provides a lightweight, dependency-free runtime for alf.
 type App struct {
-	cfg       config.Config
-	log       *zap.SugaredLogger
-	slack     *slack.Client
-	socket    *socketmode.Client
-	brain     brain.Store
-	registry  *commands.Registry
-	botUserID string
+	cfg      config.Config
+	brain    brain.Store
+	registry *commands.Registry
+
+	in     io.Reader
+	out    io.Writer
+	greet  string
+	user   string
+	prompt string
+	once   sync.Once
 }
 
-// New creates the runtime components necessary to run alf.
+// New constructs an App using the provided configuration.
 func New(cfg config.Config) (*App, error) {
-	logger, err := newLogger(cfg.LogLevel)
-	if err != nil {
-		return nil, err
-	}
-
-	logger.Infow("booting alf", "socket_mode", cfg.SocketMode)
-
 	store, err := brain.NewFileStore(cfg.BrainPath)
 	if err != nil {
 		return nil, fmt.Errorf("init brain: %w", err)
-	}
-
-	options := []slack.Option{slack.OptionDebug(strings.EqualFold(cfg.LogLevel, "debug"))}
-	if cfg.SocketMode {
-		options = append(options, slack.OptionAppLevelToken(cfg.AppToken))
-	}
-
-	slackClient := slack.New(cfg.BotToken, options...)
-
-	var socketClient *socketmode.Client
-	if cfg.SocketMode {
-		socketClient = socketmode.New(
-			slackClient,
-			socketmode.OptionDebug(strings.EqualFold(cfg.LogLevel, "debug")),
-		)
 	}
 
 	registry := commands.NewRegistry()
@@ -68,190 +47,105 @@ func New(cfg config.Config) (*App, error) {
 
 	app := &App{
 		cfg:      cfg,
-		log:      logger,
-		slack:    slackClient,
-		socket:   socketClient,
 		brain:    store,
 		registry: registry,
+		in:       os.Stdin,
+		out:      os.Stdout,
+		greet:    cfg.Greeting,
+		user:     cfg.DefaultUser,
+		prompt:   cfg.Prompt,
 	}
 
-	if err := app.identifySelf(context.Background()); err != nil {
-		return nil, err
+	if app.prompt == "" {
+		app.prompt = "> "
+	}
+
+	if app.greet == "" {
+		app.greet = "alf ready. type 'help' to explore commands or 'exit' to quit."
+	}
+
+	if app.user == "" {
+		app.user = "operator"
 	}
 
 	return app, nil
 }
 
-func (a *App) identifySelf(ctx context.Context) error {
-	auth, err := a.slack.AuthTestContext(ctx)
-	if err != nil {
-		return fmt.Errorf("auth test: %w", err)
-	}
-
-	a.botUserID = auth.UserID
-	a.log.Infow("connected to Slack", "team", auth.Team, "user_id", auth.UserID)
-	return nil
+// WithIO replaces the default input and output streams. Primarily used for tests.
+func (a *App) WithIO(in io.Reader, out io.Writer) *App {
+	a.in = in
+	a.out = out
+	return a
 }
 
-// Run starts the socket mode event loop and blocks until the provided context
-// is cancelled.
+// Run starts a simple REPL that executes commands until the context is cancelled
+// or the user types "exit" or "quit".
 func (a *App) Run(ctx context.Context) error {
-	if a.socket == nil {
-		return errors.New("socket mode is disabled")
-	}
+	a.once.Do(func() {
+		fmt.Fprintln(a.out, a.greet)
+	})
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	errCh := make(chan error, 1)
-
-	go func() {
-		err := a.socket.RunContext(ctx)
-		if err != nil && !errors.Is(err, context.Canceled) {
-			errCh <- err
-		}
-		close(errCh)
-	}()
-
+	scanner := bufio.NewScanner(a.in)
 	for {
+		if _, err := fmt.Fprint(a.out, a.prompt); err != nil {
+			return err
+		}
+
 		select {
 		case <-ctx.Done():
 			return nil
-		case err := <-errCh:
-			if err != nil {
+		default:
+		}
+
+		if !scanner.Scan() {
+			if err := scanner.Err(); err != nil {
+				if errors.Is(err, context.Canceled) {
+					return nil
+				}
 				return err
 			}
 			return nil
-		case event, ok := <-a.socket.Events:
-			if !ok {
-				return nil
-			}
-			a.handleSocketEvent(ctx, event)
+		}
+
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+
+		if exitRequested(line) {
+			fmt.Fprintln(a.out, "goodbye! 👋")
+			return nil
+		}
+
+		resp, found, err := a.executeCommand(ctx, line)
+		if err != nil {
+			fmt.Fprintf(a.out, "error: %v\n", err)
+			continue
+		}
+
+		if !found {
+			fmt.Fprintln(a.out, "I'm still learning. Try 'help' for what I can do.")
+			continue
+		}
+
+		if resp.Text != "" {
+			fmt.Fprintln(a.out, resp.Text)
 		}
 	}
 }
 
-func (a *App) handleSocketEvent(ctx context.Context, event socketmode.Event) {
-	switch event.Type {
-	case socketmode.EventTypeConnecting:
-		a.log.Info("Connecting to Slack...")
-	case socketmode.EventTypeConnectionError:
-		a.log.Warn("Connection failed; retrying")
-	case socketmode.EventTypeConnected:
-		a.log.Info("Connected to Slack via Socket Mode")
-	case socketmode.EventTypeEventsAPI:
-		a.handleEventsAPI(ctx, event)
-	case socketmode.EventTypeSlashCommand:
-		a.handleSlashCommand(ctx, event)
-	default:
-		a.socket.Ack(*event.Request)
-	}
-}
-
-func (a *App) handleEventsAPI(ctx context.Context, event socketmode.Event) {
-	a.socket.Ack(*event.Request)
-
-	eventsAPIEvent, ok := event.Data.(slackevents.EventsAPIEvent)
-	if !ok {
-		a.log.Warnw("failed to cast EventsAPIEvent", "data", event.Data)
-		return
-	}
-
-	switch eventsAPIEvent.Type {
-	case slackevents.CallbackEvent:
-		inner := eventsAPIEvent.InnerEvent
-		switch ev := inner.Data.(type) {
-		case *slackevents.AppMentionEvent:
-			a.handleMessageEvent(ctx, ev.Channel, ev.User, ev.Text, ev.ThreadTimeStamp)
-		case *slackevents.MessageEvent:
-			if ev.SubType != "" || ev.BotID != "" {
-				return
-			}
-			if ev.ChannelType == "im" {
-				a.handleMessageEvent(ctx, ev.Channel, ev.User, ev.Text, ev.ThreadTimeStamp)
-			}
-		}
-	case slackevents.AppRateLimited:
-		a.log.Warn("Slack rate limited the app")
-	default:
-		a.log.Infow("Unhandled Events API event", "type", eventsAPIEvent.Type)
-	}
-}
-
-func (a *App) handleSlashCommand(ctx context.Context, event socketmode.Event) {
-	command, ok := event.Data.(slack.SlashCommand)
-	if !ok {
-		a.socket.Ack(*event.Request)
-		return
-	}
-
-	response, found, err := a.executeCommand(ctx, command.ChannelID, command.UserID, command.Text, "")
-	if err != nil {
-		a.socket.Ack(*event.Request, map[string]string{"response_type": "ephemeral", "text": err.Error()})
-		return
-	}
-
-	if !found {
-		a.socket.Ack(*event.Request, map[string]string{"response_type": "ephemeral", "text": fmt.Sprintf("I don't know how to `%s` yet.", command.Text)})
-		return
-	}
-
-	text := response.Text
-	if text == "" {
-		text = "👌"
-	}
-
-	payload := map[string]string{
-		"response_type": "in_channel",
-		"text":          text,
-	}
-
-	a.socket.Ack(*event.Request, payload)
-}
-
-func (a *App) handleMessageEvent(ctx context.Context, channel, user, text, threadTS string) {
-	cleaned := a.cleanMessage(text)
-	if cleaned == "" {
-		return
-	}
-
-	response, found, err := a.executeCommand(ctx, channel, user, cleaned, threadTS)
-	if err != nil {
-		a.log.Errorw("command failed", "error", err)
-		a.postMessage(channel, fmt.Sprintf("Sorry, something went wrong: %v", err), threadTS)
-		return
-	}
-
-	if !found {
-		a.postMessage(channel, "I'm still learning. Try `help` for what I can do.", threadTS)
-		return
-	}
-
-	if response.Text != "" {
-		ts := response.ThreadTS
-		if ts == "" {
-			ts = threadTS
-		}
-		a.postMessage(channel, response.Text, ts, response.UseMarkdown)
-	}
-}
-
-func (a *App) executeCommand(ctx context.Context, channel, user, text, threadTS string) (commands.Response, bool, error) {
+func (a *App) executeCommand(ctx context.Context, text string) (commands.Response, bool, error) {
 	name, args := parseCommand(text)
 	if name == "" {
 		return commands.Response{}, false, nil
 	}
 
 	req := commands.Request{
-		Context:  ctx,
-		Logger:   a.log,
-		Brain:    a.brain,
-		Slack:    a.slack,
-		Channel:  channel,
-		User:     user,
-		ThreadTS: threadTS,
-		Text:     text,
-		Args:     args,
+		Context: ctx,
+		Brain:   a.brain,
+		User:    a.user,
+		Text:    text,
+		Args:    args,
 	}
 
 	cmd, ok := a.registry.Find(name)
@@ -264,36 +158,7 @@ func (a *App) executeCommand(ctx context.Context, channel, user, text, threadTS 
 		return commands.Response{}, true, err
 	}
 
-	if resp.ThreadTS == "" {
-		resp.ThreadTS = threadTS
-	}
-
 	return resp, true, nil
-}
-
-func (a *App) postMessage(channel, text, threadTS string, markdown ...bool) {
-	options := []slack.MsgOption{slack.MsgOptionText(text, len(markdown) == 0 || markdown[0])}
-	if threadTS != "" {
-		options = append(options, slack.MsgOptionTS(threadTS))
-	}
-
-	if _, _, err := a.slack.PostMessage(channel, options...); err != nil {
-		a.log.Errorw("failed to post message", "channel", channel, "error", err)
-	}
-}
-
-func (a *App) cleanMessage(text string) string {
-	trimmed := strings.TrimSpace(text)
-	if trimmed == "" {
-		return ""
-	}
-
-	if a.botUserID != "" {
-		mention := fmt.Sprintf("<@%s>", a.botUserID)
-		trimmed = strings.ReplaceAll(trimmed, mention, "")
-	}
-
-	return strings.TrimSpace(trimmed)
 }
 
 func parseCommand(text string) (string, []string) {
@@ -311,18 +176,11 @@ func parseCommand(text string) (string, []string) {
 	return name, args
 }
 
-func newLogger(level string) (*zap.SugaredLogger, error) {
-	cfg := zap.NewProductionConfig()
-	if err := cfg.Level.UnmarshalText([]byte(level)); err != nil {
-		cfg.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+func exitRequested(text string) bool {
+	lower := strings.ToLower(text)
+	if lower == "exit" || lower == "quit" {
+		return true
 	}
 
-	cfg.EncoderConfig.TimeKey = "timestamp"
-	cfg.EncoderConfig.EncodeTime = zap.TimeEncoderOfLayout(time.RFC3339)
-	logger, err := cfg.Build()
-	if err != nil {
-		return nil, fmt.Errorf("build logger: %w", err)
-	}
-
-	return logger.Sugar(), nil
+	return strings.HasPrefix(lower, ":q")
 }

@@ -14,10 +14,12 @@ import (
 
 func main() {
 	var cfgPath string
-	var logLevel string
+	var brainPath string
+	var user string
 
-	flag.StringVar(&cfgPath, "config", "", "Path to a YAML configuration file")
-	flag.StringVar(&logLevel, "log-level", "", "Override the configured log level")
+	flag.StringVar(&cfgPath, "config", "", "Path to a JSON configuration file")
+	flag.StringVar(&brainPath, "brain", "", "Override the path to the brain store")
+	flag.StringVar(&user, "user", "", "Name recorded when storing memories")
 	flag.Parse()
 
 	cfg, err := config.Load(cfgPath)
@@ -25,8 +27,12 @@ func main() {
 		log.Fatalf("load config: %v", err)
 	}
 
-	if logLevel != "" {
-		cfg.LogLevel = logLevel
+	if brainPath != "" {
+		cfg.BrainPath = brainPath
+	}
+
+	if user != "" {
+		cfg.DefaultUser = user
 	}
 
 	application, err := app.New(cfg)

@@ -4,29 +4,21 @@ import (
 	"context"
 	"strings"
 
-	"github.com/slack-go/slack"
-	"go.uber.org/zap"
-
 	"github.com/baris/alf/internal/brain"
 )
 
 // Request wraps the payload required to execute a command.
 type Request struct {
-	Context  context.Context
-	Logger   *zap.SugaredLogger
-	Brain    brain.Store
-	Slack    *slack.Client
-	Channel  string
-	User     string
-	ThreadTS string
-	Text     string
-	Args     []string
+	Context context.Context
+	Brain   brain.Store
+	User    string
+	Text    string
+	Args    []string
 }
 
-// Response represents a command result to be sent back to Slack.
+// Response represents a command result ready for display to the user.
 type Response struct {
 	Text        string
-	ThreadTS    string
 	UseMarkdown bool
 }
 
