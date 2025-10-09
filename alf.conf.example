@@ -1,8 +1,5 @@
-{
-    "name": "alf",
-    "databasePath": "/path/to/alf.db",
-    "scriptsDir": "/path/to/scripts/",
-    "slackToken": "secret",
-    "defaultChannel": "general",
-    "updateInterval": 60
-}
+# Example configuration for alf
+app_token: "xapp-your-app-token"
+bot_token: "xoxb-your-bot-token"
+brain_path: "data/brain.json"
+log_level: "info"

@@ -1,27 +1,26 @@
-NAME        := alf
-VERSION     := 0.0.1
-SRCDIR      := src
-PKGS        := $(NAME)
-SOURCES     := $(foreach pkg, $(PKGS), $(wildcard $(SRCDIR)/$(pkg)/*.go))
+NAME := alf
+BIN  := bin/$(NAME)
 
-# symlinks confuse go tools, let's not mess with it and use -L
-GOPATH  := $(shell pwd -L)
-export GOPATH
+.PHONY: build run test fmt tidy clean
 
-PATH := bin:$(PATH)
-export PATH
+build: $(BIN)
 
-all: clean $(NAME)
+$(BIN):
+	@echo "Building $(NAME)..."
+	@mkdir -p bin
+	@go build -o $(BIN) ./cmd/alf
 
-.PHONY: clean
+run: build
+	@$(BIN) $(ARGS)
+
+test:
+	@go test ./...
+
+fmt:
+	@gofmt -w $(shell go list -f '{{.Dir}}' ./...)
+
+tidy:
+	@go mod tidy
+
 clean:
-	@echo Cleaning $(NAME)...
-	@rm -f $(NAME) bin/$(NAME)
-
-deps:
-	@echo Getting dependencies...
-	@$(foreach pkg, $(PKGS), go get -t $(pkg);)
-
-$(NAME): $(SOURCES) deps
-	@echo Building $(NAME)...
-	@go build -o bin/$(NAME) $@
+	@rm -rf bin
