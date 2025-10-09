@@ -7,7 +7,7 @@ import (
 	"github.com/slack-go/slack"
 	"go.uber.org/zap"
 
-	"github.com/modern-alf/alf/internal/brain"
+	"github.com/baris/alf/internal/brain"
 )
 
 // Request wraps the payload required to execute a command.

@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/modern-alf/alf/internal/app"
-	"github.com/modern-alf/alf/internal/config"
+	"github.com/baris/alf/internal/app"
+	"github.com/baris/alf/internal/config"
 )
 
 func main() {

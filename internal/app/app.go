@@ -12,9 +12,9 @@ import (
 	"github.com/slack-go/slack/socketmode"
 	"go.uber.org/zap"
 
-	"github.com/modern-alf/alf/internal/brain"
-	"github.com/modern-alf/alf/internal/commands"
-	"github.com/modern-alf/alf/internal/config"
+	"github.com/baris/alf/internal/brain"
+	"github.com/baris/alf/internal/commands"
+	"github.com/baris/alf/internal/config"
 )
 
 // App encapsulates the modern alf runtime.

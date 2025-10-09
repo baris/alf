@@ -1,4 +1,4 @@
-module github.com/modern-alf/alf
+module github.com/baris/alf
 
 go 1.22
 
